@@ -35,7 +35,7 @@ object EmployeePipeline {
       // Step C: MAP (Transform to String)
       // Convert the objects into readable Strings for printing.
       // Input: 2 Employees -> Output: 2 Strings
-      .map(e => s"${e.name}: $$${e.salary}")
+      .map(e => f"${e.name}: $$${e.salary}%.2f")
 
     // 4. OUTPUT
     // Loop through the final List of Strings and print them.
