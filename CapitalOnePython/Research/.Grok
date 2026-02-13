@@ -1,0 +1,64 @@
+We'll treat this as a short-term "sprint" or user story within the broader pipeline — fully public, iterative, MVP-first, using xAI/Grok where helpful, and following your Constitution, Rules, and CodingStyle.md (black + ruff + mypy strict, pathlib, type annotations, docstrings, etc.).
+Project Name (for traceability)
+Capital-One-CodeSignal-Prep-2026
+Or prefix it in your numbering system: 150.Lead-Data-Engineer-CodeSignal-Sprint
+Project Description (copy-paste ready for README.md update, new Specs/ file, or decisions.md)
+Project Goal
+Build and execute a focused, repeatable preparation pipeline to ace the Capital One Lead Data Engineer CodeSignal technical assessment (70-minute, 4-question Python coding challenge, proctored, deadline Feb 23, 2026).
+The output is not just passing the test — it's capturing reusable patterns, solutions, mock runs, and learnings back into the main jobsearch RAG system so future interviews (Capital One or others) can benefit from semantic search over solved problems, timed strategies, weak-area drills, and Python code snippets.
+Why this fits the jobsearch repo
+
+Enhances the "interview prep" module (future extension mentioned in README).
+Stores artifacts (problems → solutions → explanations → timed runs) in data/interview-prep/ or data/jobs/<capital-one-uuid>/research/.
+Builds teachable moments in Teachables/ (e.g., Teachables/150001-Two-Pointers-Optimization.md).
+Practices clean, production-grade Python that aligns with Data Engineer expectations (efficient, readable, edge-case robust).
+Keeps everything public and versioned in GitHub.
+
+Scope (MVP – next 10 days)
+
+Daily/iterative practice loop (70-min timed mocks + review)
+Problem categorization & targeted drills (based on recent Capital One reports: arrays/strings easy, hashing/sorting medium, DP/graph/matrix hard/time-sink).
+Artifact storage
+Raw problem statements (anonymized if needed)
+My proposed solutions + your implementations
+Test-case edge examples
+Timing & score simulations
+Weak-spot trackers (e.g., DP comfort, time management)
+
+RAG integration seed — embed solutions/explanations so the main system can later retrieve "similar LeetCode-hard matrix problem from Capital One prep".
+Automation hooks — simple scripts in scripts/ for running LeetCode-style mocks or validating solutions (using your code_execution tool here or unittest later).
+
+Out of scope (for now)
+
+Full Streamlit UI for this sprint
+Heavy PDF resume/cover-letter generation tie-in (but we can note patterns for later)
+Non-Python languages
+
+Success Criteria
+
+Complete 5–8 full 70-min mock sessions (CodeSignal practice + LeetCode timed sets).
+Consistently solve 3/4 questions fully + partial on the hard one.
+Achieve clean, black-formatted, typed, documented code in every solution.
+Log decisions/learnings in .grok/decisions.md (e.g., "2026-02-14: Prioritize sliding window & counter patterns first").
+Pass the real assessment on or before Feb 23 → document outcome publicly.
+
+Tech & Style Alignment
+
+Python 3.12, strict typing (TypedDict, dataclass, Annotated, etc.)
+Black line-length 100, ruff strict, isort black profile
+pathlib everywhere, argparse CLI if we script mocks
+Docstrings mandatory
+Mock mode / graceful fallbacks
+Idempotent where possible
+All comms & code stay in this public repo
+
+Next Immediate Steps (proposed workflow)
+
+Create folder: data/interview-prep/capital-one-2026/ with metadata.yaml (status, sessions completed, target score).
+I search/pull recent example patterns (e.g., from CodeSignal GCA samples, Capital One-tagged LeetCode).
+We pick 1–2 practice problems per session → I propose skeleton/approach → you implement/run → we review & refine.
+After each mock: commit solution file like solutions/2026-02-14-session-01/q3_matrix_rotation.py with comments + timing notes.
+Update decisions.md & create Teachables if a reusable pattern emerges.
+
+Sound good as a starting charter?
+If yes → confirm and tell me your current comfort levels (e.g., "strong in arrays/hashing, weak in DP/graphs") so we target Day 1 drills. Or suggest tweaks to the description before we branch/create files.
