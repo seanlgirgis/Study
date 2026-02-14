@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monotonic Stack Visualizer - Days Until Warmer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --bar-default: #475569;
+            --bar-current: #a855f7;
+            /* Purple for current i */
+            --bar-stack: #3b82f6;
+            /* Blue for stack items */
+            --bar-popped: #ef4444;
+            /* Red when popped */
+            --bar-solved: #10b981;
+            /* Green when solved */
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Visualization Area */
+        #viz-container {
+            height: 400px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 10px;
+            padding-bottom: 40px;
+            /* Space for labels */
+        }
+
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            width: 50px;
+            position: relative;
+        }
+
+        .bar {
+            width: 100%;
+            background-color: var(--bar-default);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease, background-color 0.3s ease;
+            position: relative;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: bold;
+        }
+
+        .bar-index {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .bar-result {
+            position: absolute;
+            bottom: -45px;
+            font-size: 0.9rem;
+            color: var(--bar-solved);
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bar-result.visible {
+            opacity: 1;
+        }
+
+        /* Stack Visual */
+        #stack-container {
+            display: flex;
+            flex-direction: column-reverse;
+            /* Bottom up */
+            gap: 5px;
+            height: 300px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .stack-item {
+            width: 80%;
+            padding: 10px;
+            background-color: var(--bar-stack);
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.8rem;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .stack-item.popping {
+            background-color: var(--bar-popped);
+            animation: popOut 0.3s ease-in forwards;
+        }
+
+        @keyframes popOut {
+            to {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--border-color);
+        }
+
+        button.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Code Trace */
+        .code-line {
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-left: 3px solid transparent;
+        }
+
+        .code-line.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--accent-color);
+        }
+
+        /* Status & Log */
+        #status-text {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--accent-color);
+            min-height: 1.2em;
+        }
+
+        .variable-watch {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: #0f172a;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .var-name {
+            color: #a5b4fc;
+        }
+
+        .var-val {
+            color: #fff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🌡️ Monotonic Stack Visualizer</h1>
+    <p class="subtitle">Solving "Days Until Warmer" (LeetCode 739) in O(N)</p>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button onclick="loadExample(0)">Classic</button>
+        <button onclick="loadExample(1)">Strictly Increasing</button>
+        <button onclick="loadExample(2)">Strictly Decreasing</button>
+        <button onclick="loadExample(3)">Wavy</button>
+        <div style="width: 20px;"></div>
+        <button onclick="reset()">⏮ Reset</button>
+        <button onclick="step()">▶ Step</button>
+        <button onclick="play()" id="play-btn">▶ Play</button>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="container" style="margin-top: 20px;">
+
+        <!-- Left: Visualization -->
+        <div class="panel" style="grid-column: span 2;">
+            <div id="status-text">Ready to start...</div>
+            <div id="viz-container"></div>
+
+            <div class="variable-watch">
+                <div><span class="var-name">i:</span> <span id="var-i" class="var-val">-</span></div>
+                <div><span class="var-name">current_temp:</span> <span id="var-temp" class="var-val">-</span></div>
+                <div><span class="var-name">stack:</span> <span id="var-stack" class="var-val">[]</span></div>
+            </div>
+        </div>
+
+        <!-- Right Top: Stack Visual -->
+        <div class="panel">
+            <h3 style="margin-top:0; font-size:1rem; color:#94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                Stack State</h3>
+            <div id="stack-container"></div>
+        </div>
+
+        <!-- Right Bottom: Code Trace -->
+        <div class="panel">
+            <h3 style="margin-top:0; font-size:1rem; color:#94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                Algorithm</h3>
+            <div id="code-box">
+                <div class="code-line" id="line-1">n = len(temps), res = [0]*n</div>
+                <div class="code-line" id="line-2">stack = []</div>
+                <div class="code-line" id="line-3">for i, t in enumerate(temps):</div>
+                <div class="code-line" id="line-4">&nbsp;&nbsp;while stack and temps[stack[-1]] < t:</div>
+                        <div class="code-line" id="line-5">&nbsp;&nbsp;&nbsp;&nbsp;prev_index = stack.pop()</div>
+                        <div class="code-line" id="line-6">&nbsp;&nbsp;&nbsp;&nbsp;res[prev_index] = i - prev_index
+                        </div>
+                        <div class="code-line" id="line-7">&nbsp;&nbsp;stack.append(i)</div>
+                        <div class="code-line" id="line-8">return res</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const EXAMPLES = [
+                [73, 74, 75, 71, 69, 72, 76, 73], // Classic
+                [30, 40, 50, 60],                 // Increasing
+                [30, 20, 10],                     // Decreasing
+                [60, 65, 62, 70, 68, 75]          // Wavy
+            ];
+
+            let temps = [];
+            let steps = [];
+            let currentStep = 0;
+            let isPlaying = false;
+            let playInterval = null;
+
+            // Compute all animation steps upfront
+            function computeSteps(data) {
+                const history = [];
+                const stack = []; // Stores indices
+                const res = new Array(data.length).fill(0);
+
+                history.push({
+                    type: 'init',
+                    activeLine: 1,
+                    desc: 'Initialize result array and empty stack.',
+                    i: -1, stack: [], res: [...res]
+                });
+
+                for (let i = 0; i < data.length; i++) {
+                    const t = data[i];
+
+                    history.push({
+                        type: 'loop_start',
+                        activeLine: 3,
+                        desc: `Current day index ${i} (Temp: ${t}°).`,
+                        i: i, stack: [...stack], res: [...res]
+                    });
+
+                    while (stack.length > 0 && data[stack[stack.length - 1]] < t) {
+                        const topIdx = stack[stack.length - 1];
+                        const topTemp = data[topIdx];
+
+                        history.push({
+                            type: 'check_while',
+                            activeLine: 4,
+                            desc: `Check stack top: Day ${topIdx} (${topTemp}°) < Current (${t}°)? YES!`,
+                            i: i, stack: [...stack], res: [...res], highlightStackTitle: true
+                        });
+
+                        stack.pop();
+                        const daysWait = i - topIdx;
+                        res[topIdx] = daysWait;
+
+                        history.push({
+                            type: 'pop_update',
+                            activeLine: 5,
+                            desc: `Warm day found! Pop ${topIdx}. Wait was ${i} - ${topIdx} = ${daysWait} days.`,
+                            i: i, stack: [...stack], res: [...res], popped: topIdx
+                        });
+                    }
+
+                    // Failed while check
+                    if (stack.length > 0) {
+                        const topIdx = stack[stack.length - 1];
+                        const topTemp = data[topIdx];
+                        history.push({
+                            type: 'check_while_fail',
+                            activeLine: 4,
+                            desc: `Check stack top: Day ${topIdx} (${topTemp}°) < Current (${t}°)? NO. Stop popping.`,
+                            i: i, stack: [...stack], res: [...res]
+                        });
+                    } else {
+                        history.push({
+                            type: 'check_while_empty',
+                            activeLine: 4,
+                            desc: `Stack is empty. Nothing to pop.`,
+                            i: i, stack: [...stack], res: [...res]
+                        });
+                    }
+
+                    stack.push(i);
+                    history.push({
+                        type: 'push',
+                        activeLine: 7,
+                        desc: `Push current day ${i} onto stack to find its warmer future.`,
+                        i: i, stack: [...stack], res: [...res], pushed: i
+                    });
+                }
+
+                history.push({
+                    type: 'done',
+                    activeLine: 8,
+                    desc: `Scan complete. Final result: [${res.join(', ')}]`,
+                    i: -1, stack: [...stack], res: [...res]
+                });
+
+                return history;
+            }
+
+            function initViz() {
+                const container = document.getElementById('viz-container');
+                container.innerHTML = '';
+
+                const maxTemp = Math.max(...temps, 100);
+                const minTemp = Math.min(...temps, 0); // clamp for scaling
+
+                temps.forEach((t, idx) => {
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'bar-container';
+
+                    // Height calc
+                    const percent = Math.max(10, ((t - minTemp) / (maxTemp - minTemp)) * 80 + 10);
+
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.id = `bar-${idx}`;
+                    bar.style.height = `${percent}%`;
+
+                    const val = document.createElement('div');
+                    val.className = 'bar-value';
+                    val.innerText = t;
+
+                    const index = document.createElement('div');
+                    index.className = 'bar-index';
+                    index.innerText = `[${idx}]`;
+
+                    const res = document.createElement('div');
+                    res.className = 'bar-result';
+                    res.id = `res-${idx}`;
+                    res.innerText = '0';
+
+                    barContainer.appendChild(val);
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(index);
+                    barContainer.appendChild(res);
+                    container.appendChild(barContainer);
+                });
+            }
+
+            function renderStep() {
+                if (currentStep >= steps.length) {
+                    setIsPlaying(false);
+                    return;
+                }
+
+                const s = steps[currentStep];
+
+                // 1. Update Status
+                document.getElementById('status-text').innerText = s.desc;
+                document.getElementById('var-i').innerText = s.i === -1 ? '-' : s.i;
+                document.getElementById('var-temp').innerText = s.i === -1 ? '-' : temps[s.i];
+                document.getElementById('var-stack').innerText = JSON.stringify(s.stack);
+
+                // 2. Highlight Code
+                document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                if (s.activeLine) document.getElementById(`line-${s.activeLine}`).classList.add('active');
+
+                // 3. Update Bars
+                document.querySelectorAll('.bar').forEach(b => {
+                    b.style.backgroundColor = 'var(--bar-default)';
+                    b.style.opacity = '1';
+                    b.style.border = 'none';
+                });
+
+                // Highlight current i
+                if (s.i !== -1 && s.i < temps.length) {
+                    const curBar = document.getElementById(`bar-${s.i}`);
+                    curBar.style.backgroundColor = 'var(--bar-current)';
+                    curBar.style.boxShadow = '0 0 10px var(--bar-current)';
+                }
+
+                // Highlight Stack items
+                s.stack.forEach(idx => {
+                    const b = document.getElementById(`bar-${idx}`);
+                    if (idx !== s.i) b.style.backgroundColor = 'var(--bar-stack)';
+                });
+
+                // Highlight Popped items for effect
+                if (s.type === 'pop_update') {
+                    const b = document.getElementById(`bar-${s.popped}`);
+                    b.style.backgroundColor = 'var(--bar-popped)';
+                }
+
+                // 4. Update Results
+                s.res.forEach((val, idx) => {
+                    const el = document.getElementById(`res-${idx}`);
+                    el.innerText = val;
+                    if (val > 0) el.classList.add('visible');
+                });
+
+                // 5. Render Stack Visual
+                const stackContainer = document.getElementById('stack-container');
+                stackContainer.innerHTML = '';
+                s.stack.forEach(idx => {
+                    const div = document.createElement('div');
+                    div.className = 'stack-item';
+                    div.innerHTML = `<span>Idx: ${idx}</span> <span>${temps[idx]}°</span>`;
+                    stackContainer.appendChild(div);
+                });
+                // If just popped, show a ghost ? No, simpler to just show current state.
+            }
+
+            function loadExample(idx) {
+                temps = EXAMPLES[idx];
+                steps = computeSteps(temps);
+                currentStep = 0;
+                setIsPlaying(false);
+                initViz();
+                renderStep();
+            }
+
+            function step() {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    renderStep();
+                }
+            }
+
+            function reset() {
+                currentStep = 0;
+                setIsPlaying(false);
+                renderStep();
+            }
+
+            function setIsPlaying(val) {
+                isPlaying = val;
+                const btn = document.getElementById('play-btn');
+                btn.innerText = isPlaying ? '⏸ Pause' : '▶ Play';
+                btn.classList.toggle('active', isPlaying);
+
+                if (isPlaying) {
+                    playInterval = setInterval(() => {
+                        if (currentStep < steps.length - 1) {
+                            currentStep++;
+                            renderStep();
+                        } else {
+                            setIsPlaying(false);
+                        }
+                    }, 500); // 500ms per step
+                } else {
+                    clearInterval(playInterval);
+                }
+            }
+
+            function play() {
+                setIsPlaying(!isPlaying);
+            }
+
+            // Initialize
+            loadExample(0);
+
+        </script>
+</body>
+
+</html>

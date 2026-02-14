@@ -1,5 +1,5 @@
 Linear scan is solid — one problem is enough for that pattern. Let me design the reverse traversal exercise.
-
+Leetcode 739
 ---
 
 **Project: Capital-One-CodeSignal-Prep-2026**
