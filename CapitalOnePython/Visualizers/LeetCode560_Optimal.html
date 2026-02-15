@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefix Sum Visualizer — LeetCode 560</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e17;
+            --surface: #111827;
+            --surface-2: #1a2236;
+            --border: #2a3550;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.15);
+            --green: #34d399;
+            --green-glow: rgba(52, 211, 153, 0.2);
+            --red: #f87171;
+            --orange: #fb923c;
+            --purple: #a78bfa;
+            --yellow: #fbbf24;
+            --pink: #f472b6;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 24px 60px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* Input Controls */
+        .controls {
+            display: flex;
+            gap: 14px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+            padding: 20px 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+        }
+
+        .input-group input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #818cf8);
+            color: #0a0e17;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-step {
+            background: var(--surface-2);
+            color: var(--accent);
+            border: 1px solid var(--border);
+        }
+
+        .btn-step:hover {
+            background: var(--border);
+        }
+
+        .btn-step:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .btn-auto {
+            background: var(--green);
+            color: #0a0e17;
+        }
+
+        .btn-auto.running {
+            background: var(--red);
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .step-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-left: auto;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Array visualization */
+        .array-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .cell-box {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .cell-index {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        .cell.active .cell-box {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .cell.processed .cell-box {
+            border-color: var(--border);
+            opacity: 0.5;
+        }
+
+        .cell.match .cell-box {
+            border-color: var(--green);
+            background: var(--green-glow);
+            box-shadow: 0 0 20px var(--green-glow);
+        }
+
+        /* Prefix sum bar chart */
+        .prefix-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 180px;
+            padding: 0 10px 30px;
+            position: relative;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .prefix-chart .zero-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--text-dim);
+            opacity: 0.3;
+        }
+
+        .prefix-bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 40px;
+            max-width: 70px;
+            position: relative;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .prefix-bar {
+            width: 100%;
+            max-width: 40px;
+            border-radius: 6px 6px 2px 2px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: absolute;
+            bottom: 30px;
+        }
+
+        .prefix-bar.positive {
+            background: linear-gradient(180deg, var(--accent), rgba(56, 189, 248, 0.4));
+        }
+
+        .prefix-bar.negative {
+            background: linear-gradient(0deg, var(--red), rgba(248, 113, 113, 0.4));
+            border-radius: 2px 2px 6px 6px;
+        }
+
+        .prefix-bar.highlighted {
+            box-shadow: 0 0 16px var(--green-glow);
+            background: linear-gradient(180deg, var(--green), rgba(52, 211, 153, 0.4)) !important;
+        }
+
+        .prefix-bar-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            position: absolute;
+            bottom: 8px;
+            white-space: nowrap;
+        }
+
+        .prefix-bar-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text);
+            position: absolute;
+            white-space: nowrap;
+        }
+
+        /* Hashmap visualization */
+        .hashmap-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .hashmap-entry {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .hashmap-entry.flash {
+            border-color: var(--yellow);
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .hashmap-entry.lookup {
+            border-color: var(--green);
+            box-shadow: 0 0 12px var(--green-glow);
+        }
+
+        .hashmap-key {
+            padding: 8px 12px;
+            background: var(--surface-2);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .hashmap-val {
+            padding: 8px 12px;
+            background: var(--surface);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 32px;
+            text-align: center;
+        }
+
+        /* Narration */
+        .narration {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .narration-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .narration-text .hl {
+            color: var(--accent);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .narration-text .match-hl {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        /* Result counter */
+        .result-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 16px 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 28px;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .result-value.count {
+            color: var(--green);
+        }
+
+        .result-value.prefix {
+            color: var(--accent);
+        }
+
+        .result-value.target {
+            color: var(--orange);
+        }
+
+        /* Odometer metaphor */
+        .odometer-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 28px;
+        }
+
+        .odometer-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--purple);
+            margin-bottom: 12px;
+        }
+
+        .odometer-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 2;
+            color: var(--text);
+        }
+
+        .odometer-formula .sym {
+            color: var(--text-dim);
+        }
+
+        .odometer-formula .val {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .odometer-formula .k-val {
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        .odometer-formula .found {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .odometer-formula .not-found {
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        /* Subarray highlight connector */
+        .subarray-found {
+            margin-top: 8px;
+            padding: 10px 16px;
+            background: var(--green-glow);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--green);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .speed-control input[type="range"] {
+            width: 80px;
+            accent-color: var(--accent);
+        }
+
+        /* Layout for two-column on wider screens */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .step-controls {
+                flex-wrap: wrap;
+            }
+
+            .cell-box {
+                width: 44px;
+                height: 44px;
+                font-size: 0.95rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Prefix Sum + Hashmap Visualizer</h1>
+            <p>LeetCode 560 — Subarray Sum Equals K — Step through the algorithm</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="input-group" style="flex:2;">
+                <label>Array (comma separated)</label>
+                <input type="text" id="arrayInput" value="-1, 4, -1, 2, 0, 3" />
+            </div>
+            <div class="input-group" style="flex:0.7;">
+                <label>Target k</label>
+                <input type="number" id="kInput" value="3" />
+            </div>
+            <button class="btn btn-primary" onclick="initialize()">Load</button>
+        </div>
+
+        <!-- Step controls -->
+        <div class="step-controls">
+            <button class="btn btn-step" id="btnPrev" onclick="stepBack()" disabled>&larr; Back</button>
+            <button class="btn btn-step" id="btnNext" onclick="stepForward()">Next &rarr;</button>
+            <button class="btn btn-step" onclick="resetViz()">Reset</button>
+            <button class="btn btn-auto" id="btnAuto" onclick="toggleAuto()">Auto Play</button>
+            <div class="speed-control">
+                <span>Speed</span>
+                <input type="range" id="speedSlider" min="1" max="10" value="5" />
+            </div>
+            <div class="step-counter" id="stepCounter">Step 0 / 0</div>
+        </div>
+
+        <!-- Narration -->
+        <div class="narration">
+            <div class="narration-text" id="narration">
+                Press <strong>Load</strong> then step through the algorithm to see how prefix sums + hashmap find all
+                subarrays summing to <span class="hl">k</span>.
+            </div>
+        </div>
+
+        <!-- Result bar -->
+        <div class="result-bar">
+            <div class="result-item">
+                <span class="result-label">Prefix Sum</span>
+                <span class="result-value prefix" id="prefixDisplay">0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Target k</span>
+                <span class="result-value target" id="kDisplay">3</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Looking for</span>
+                <span class="result-value" id="lookingFor" style="color:var(--yellow);">—</span>
+            </div>
+            <div class="result-item" style="margin-left:auto;">
+                <span class="result-label">Count</span>
+                <span class="result-value count" id="countDisplay">0</span>
+            </div>
+        </div>
+
+        <!-- Array -->
+        <div class="section">
+            <div class="section-title">Input Array</div>
+            <div class="array-row" id="arrayViz"></div>
+        </div>
+
+        <!-- Prefix Sum Chart -->
+        <div class="section">
+            <div class="section-title">Prefix Sums (Odometer Readings)</div>
+            <div
+                style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; position:relative;">
+                <div class="prefix-chart" id="prefixChart"></div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <!-- Hashmap -->
+            <div class="section">
+                <div class="section-title">Hashmap { prefix_sum : count }</div>
+                <div class="hashmap-grid" id="hashmapViz"></div>
+            </div>
+
+            <!-- Odometer logic -->
+            <div class="section">
+                <div class="odometer-section" id="odometerSection">
+                    <div class="odometer-title">Odometer Logic</div>
+                    <div class="odometer-formula" id="odometerFormula">
+                        Load an array to begin...
+                    </div>
+                    <div id="subarrayFound"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let nums = [];
+        let k = 3;
+        let steps = [];
+        let currentStep = -1;
+        let autoInterval = null;
+
+        function parseArray(str) {
+            return str.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        }
+
+        function precomputeSteps() {
+            steps = [];
+            let prefixSum = 0;
+            let sumCount = { 0: 1 };
+            let count = 0;
+
+            // Initial state
+            steps.push({
+                type: 'init',
+                prefixSum: 0,
+                sumCount: { ...sumCount },
+                count: 0,
+                activeIndex: -1,
+                prefixValues: [0],
+                lookingFor: null,
+                found: false,
+                foundCount: 0,
+                narration: `Initialized! <span class="hl">prefix_sum = 0</span>. Hashmap seeded with <span class="hl">{0: 1}</span> — this represents the "odometer reading" before we start.`
+            });
+
+            for (let i = 0; i < nums.length; i++) {
+                prefixSum += nums[i];
+                const target = prefixSum - k;
+                const found = target in sumCount;
+                const foundCount = found ? sumCount[target] : 0;
+
+                if (found) count += foundCount;
+
+                // Step: process element
+                const prefixVals = [...(steps[steps.length - 1].prefixValues), prefixSum];
+
+                steps.push({
+                    type: 'process',
+                    index: i,
+                    num: nums[i],
+                    prefixSum,
+                    target,
+                    found,
+                    foundCount,
+                    count,
+                    sumCount: { ...sumCount },
+                    activeIndex: i,
+                    prefixValues: prefixVals,
+                    lookingFor: target,
+                    narration: found
+                        ? `Processing <span class="hl">nums[${i}] = ${nums[i]}</span>. Prefix sum = <span class="hl">${prefixSum}</span>. Looking for <span class="hl">${prefixSum} - ${k} = ${target}</span> in the map... <span class="match-hl">FOUND ${foundCount} time(s)!</span> That means ${foundCount} subarray(s) ending here sum to ${k}. Count → <span class="match-hl">${count}</span>.`
+                        : `Processing <span class="hl">nums[${i}] = ${nums[i]}</span>. Prefix sum = <span class="hl">${prefixSum}</span>. Looking for <span class="hl">${prefixSum} - ${k} = ${target}</span> in the map... not found. No new subarrays.`
+                });
+
+                sumCount[prefixSum] = (sumCount[prefixSum] || 0) + 1;
+
+                // Step: update hashmap
+                steps.push({
+                    type: 'update_map',
+                    index: i,
+                    prefixSum,
+                    count,
+                    sumCount: { ...sumCount },
+                    activeIndex: i,
+                    prefixValues: prefixVals,
+                    lookingFor: target,
+                    found,
+                    foundCount: 0,
+                    narration: `Recorded <span class="hl">prefix_sum ${prefixSum}</span> in the hashmap. Map[${prefixSum}] = ${sumCount[prefixSum]}.`
+                });
+            }
+
+            // Final
+            steps.push({
+                type: 'done',
+                prefixSum,
+                count,
+                sumCount: { ...sumCount },
+                activeIndex: -1,
+                prefixValues: steps[steps.length - 1].prefixValues,
+                lookingFor: null,
+                found: false,
+                foundCount: 0,
+                narration: `Done! Total subarrays with sum = <span class="hl">${k}</span>: <span class="match-hl">${count}</span>.`
+            });
+        }
+
+        function renderState(step) {
+            const s = steps[step];
+
+            // Narration
+            document.getElementById('narration').innerHTML = s.narration;
+
+            // Result bar
+            document.getElementById('prefixDisplay').textContent = s.prefixSum;
+            document.getElementById('kDisplay').textContent = k;
+            document.getElementById('lookingFor').textContent = s.lookingFor !== null ? s.lookingFor : '—';
+            document.getElementById('countDisplay').textContent = s.count;
+
+            // Array
+            const arrayViz = document.getElementById('arrayViz');
+            arrayViz.innerHTML = '';
+            nums.forEach((num, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (i === s.activeIndex) cell.classList.add('active');
+                else if (s.activeIndex >= 0 && i < s.activeIndex) cell.classList.add('processed');
+
+                // Highlight matched subarray elements
+                if (s.type === 'process' && s.found) {
+                    // Find subarrays ending at s.index
+                    // We highlight the range for visual effect
+                    const prefixVals = s.prefixValues;
+                    // The target prefix was s.target, find the latest occurrence before current
+                    // Simple: highlight from last occurrence of target prefix to current index
+                    if (i <= s.index) {
+                        // Check if this is part of a matching subarray
+                        let ps = 0;
+                        for (let j = 0; j <= i; j++) ps += nums[j];
+                        let endPs = 0;
+                        for (let j = 0; j <= s.index; j++) endPs += nums[j];
+                        if (endPs - ps === k && i <= s.index) {
+                            // This would be start of a valid subarray at i+1.. too complex, skip for clarity
+                        }
+                    }
+                }
+
+                cell.innerHTML = `
+        <div class="cell-box">${num}</div>
+        <div class="cell-index">[${i}]</div>
+      `;
+                arrayViz.appendChild(cell);
+            });
+
+            // Prefix chart
+            renderPrefixChart(s);
+
+            // Hashmap
+            renderHashmap(s);
+
+            // Odometer
+            renderOdometer(s);
+
+            // Step counter
+            document.getElementById('stepCounter').textContent = `Step ${step} / ${steps.length - 1}`;
+            document.getElementById('btnPrev').disabled = step <= 0;
+            document.getElementById('btnNext').disabled = step >= steps.length - 1;
+        }
+
+        function renderPrefixChart(s) {
+            const chart = document.getElementById('prefixChart');
+            chart.innerHTML = '';
+
+            const vals = s.prefixValues;
+            const maxAbs = Math.max(1, ...vals.map(v => Math.abs(v)));
+            const barAreaHeight = 130; // px available for bars
+            const zeroY = barAreaHeight * 0.5; // center line for zero
+
+            // Dynamic zero line position based on data
+            const maxVal = Math.max(0, ...vals);
+            const minVal = Math.min(0, ...vals);
+            const range = Math.max(1, maxVal - minVal);
+            const zeroFraction = maxVal / range;
+            const zeroBottom = 30 + barAreaHeight * (1 - zeroFraction);
+
+            // Zero line
+            const zeroLine = document.createElement('div');
+            zeroLine.className = 'zero-line';
+            zeroLine.style.bottom = zeroBottom + 'px';
+            chart.appendChild(zeroLine);
+
+            // Zero label
+            const zeroLabel = document.createElement('div');
+            zeroLabel.style.cssText = `position:absolute; left:2px; font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--text-dim);`;
+            zeroLabel.style.bottom = (zeroBottom + 2) + 'px';
+            zeroLabel.textContent = '0';
+            chart.appendChild(zeroLabel);
+
+            vals.forEach((val, i) => {
+                const group = document.createElement('div');
+                group.className = 'prefix-bar-group';
+
+                const barHeight = Math.max(3, (Math.abs(val) / range) * barAreaHeight);
+                const bar = document.createElement('div');
+                bar.className = 'prefix-bar';
+
+                const isHighlighted = s.type === 'process' && s.found && val === s.target;
+
+                if (val >= 0) {
+                    bar.classList.add('positive');
+                    bar.style.height = barHeight + 'px';
+                    bar.style.bottom = zeroBottom + 'px';
+                } else {
+                    bar.classList.add('negative');
+                    bar.style.height = barHeight + 'px';
+                    bar.style.bottom = (zeroBottom - barHeight) + 'px';
+                }
+
+                if (isHighlighted) bar.classList.add('highlighted');
+                if (i === vals.length - 1 && s.type !== 'init' && s.type !== 'done') {
+                    bar.style.boxShadow = '0 0 12px var(--accent-glow)';
+                }
+
+                // Value label
+                const valLabel = document.createElement('div');
+                valLabel.className = 'prefix-bar-value';
+                valLabel.textContent = val;
+                if (val >= 0) {
+                    valLabel.style.bottom = (zeroBottom + barHeight + 4) + 'px';
+                } else {
+                    valLabel.style.bottom = (zeroBottom - barHeight - 18) + 'px';
+                }
+                if (isHighlighted) valLabel.style.color = 'var(--green)';
+
+                // Index label
+                const idxLabel = document.createElement('div');
+                idxLabel.className = 'prefix-bar-label';
+                idxLabel.textContent = `p[${i}]`;
+
+                group.appendChild(bar);
+                group.appendChild(valLabel);
+                group.appendChild(idxLabel);
+                chart.appendChild(group);
+            });
+        }
+
+        function renderHashmap(s) {
+            const container = document.getElementById('hashmapViz');
+            container.innerHTML = '';
+
+            const entries = Object.entries(s.sumCount).sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
+
+            entries.forEach(([key, val]) => {
+                const entry = document.createElement('div');
+                entry.className = 'hashmap-entry';
+
+                // Flash if this key was just updated
+                if (s.type === 'update_map' && parseFloat(key) === s.prefixSum) {
+                    entry.classList.add('flash');
+                }
+                // Highlight if this key was the lookup target
+                if (s.type === 'process' && s.found && parseFloat(key) === s.lookingFor) {
+                    entry.classList.add('lookup');
+                }
+
+                entry.innerHTML = `
+        <div class="hashmap-key">${key}</div>
+        <div class="hashmap-val">${val}</div>
+      `;
+                container.appendChild(entry);
+            });
+        }
+
+        function renderOdometer(s) {
+            const formula = document.getElementById('odometerFormula');
+            const found = document.getElementById('subarrayFound');
+            found.innerHTML = '';
+
+            if (s.type === 'init') {
+                formula.innerHTML = `Odometer at start: <span class="val">0</span><br>Ready to walk through the array...`;
+            } else if (s.type === 'process') {
+                formula.innerHTML = `
+        Current odometer: <span class="val">${s.prefixSum}</span><br>
+        Need to find: <span class="val">${s.prefixSum}</span> <span class="sym">-</span> <span class="k-val">${k}</span> <span class="sym">=</span> <span class="val">${s.target}</span><br>
+        In hashmap? ${s.found
+                        ? `<span class="found">YES (${s.foundCount}x) → ${s.foundCount} subarray(s) found!</span>`
+                        : `<span class="not-found">NO</span>`}
+      `;
+                if (s.found) {
+                    // Show which subarrays were found
+                    const prefixes = s.prefixValues;
+                    let subarrays = [];
+                    for (let p = 0; p < prefixes.length - 1; p++) {
+                        if (prefixes[p] === s.target) {
+                            const start = p;
+                            const end = s.index;
+                            const sub = nums.slice(start, end + 1);
+                            subarrays.push(`[${sub.join(', ')}] (indices ${start}..${end})`);
+                        }
+                    }
+                    if (subarrays.length > 0) {
+                        found.innerHTML = `<div class="subarray-found">Subarrays: ${subarrays.join(' &nbsp;|&nbsp; ')}</div>`;
+                    }
+                }
+            } else if (s.type === 'update_map') {
+                formula.innerHTML = `Recorded odometer reading <span class="val">${s.prefixSum}</span> in logbook.`;
+            } else if (s.type === 'done') {
+                formula.innerHTML = `
+        Journey complete!<br>
+        Total subarrays with distance = <span class="k-val">${k}</span>: <span class="found">${s.count}</span>
+      `;
+            }
+        }
+
+        function initialize() {
+            stopAuto();
+            const arrStr = document.getElementById('arrayInput').value;
+            const kVal = document.getElementById('kInput').value;
+
+            nums = parseArray(arrStr);
+            k = parseInt(kVal) || 0;
+
+            if (nums.length === 0) {
+                document.getElementById('narration').innerHTML = 'Please enter a valid array.';
+                return;
+            }
+
+            precomputeSteps();
+            currentStep = 0;
+            renderState(0);
+        }
+
+        function stepForward() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderState(currentStep);
+            }
+        }
+
+        function stepBack() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderState(currentStep);
+            }
+        }
+
+        function resetViz() {
+            stopAuto();
+            if (steps.length > 0) {
+                currentStep = 0;
+                renderState(0);
+            }
+        }
+
+        function toggleAuto() {
+            if (autoInterval) {
+                stopAuto();
+            } else {
+                const btn = document.getElementById('btnAuto');
+                btn.textContent = 'Stop';
+                btn.classList.add('running');
+                const speed = 11 - document.getElementById('speedSlider').value; // invert
+                autoInterval = setInterval(() => {
+                    if (currentStep >= steps.length - 1) {
+                        stopAuto();
+                        return;
+                    }
+                    stepForward();
+                }, speed * 200);
+            }
+        }
+
+        function stopAuto() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+            }
+            const btn = document.getElementById('btnAuto');
+            btn.textContent = 'Auto Play';
+            btn.classList.remove('running');
+        }
+
+        // Initialize on load
+        initialize();
+    </script>
+</body>
+
+</html>

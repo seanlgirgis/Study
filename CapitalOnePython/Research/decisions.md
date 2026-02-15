@@ -67,3 +67,16 @@ You can then share your initial approach/skeleton, and I'll implement/test/refin
 Or pick another one from the Day 1 list (1, 217, 974) if you prefer.
 
 Your call!
+
+
+### 2026-02-15 – LeetCode 974: Final Validation & Test Expectation Fixes
+- **Status:** Solution correct after remainder normalization
+- **Bug Fixed:** Negative remainders → now handled with `(rem + k) % k`
+- **Learnings:**
+  - Test expectations can be wrong even when code is right — always manually verify small cases
+  - [1,2,3] k=3 → 3 subarrays (not 2)
+  - [1,0,1] k=2 → 2 subarrays (not 1)
+- **Weak-spot Update:** Trust but verify test data → improved
+- **Teachables Seed:** Teachables/150004-LeetCode-974-Prefix-Modulo.md (include normalization + test pitfalls)
+
+
