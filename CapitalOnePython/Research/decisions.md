@@ -80,3 +80,41 @@ Your call!
 - **Teachables Seed:** Teachables/150004-LeetCode-974-Prefix-Modulo.md (include normalization + test pitfalls)
 
 
+### 2026-02-15 – LeetCode 1: Two Sum – Logic Clarification
+- **Status:** Solution correct (alternative valid one-pass approach)
+- **Key Insight:**
+  - Storing complement (diff) first + checking if current num fulfills a previous need is equivalent to the classic "check complement then store current"
+  - Both achieve the same result: find pair in one pass
+  - Your version passed all adversarial cases (order reversal, negatives, late pairs, distinct values)
+- **Learnings:**
+  - Multiple valid ways to implement the seen map in Two Sum
+  - Test cases with "exactly one solution" guarantee → any correct pair is acceptable
+  - No need to force classic pattern if alternative is clean & correct
+- **Weak-spot Update:** Two Sum variations → strong / flexible
+
+### 2026-02-15 – LeetCode 217: Contains Duplicate
+- **Status:** Solved & validated
+- **Approach Chosen:** Set-based one-pass with early return
+- **Learnings:**
+  - Simplest hashing use-case: existence check only → set is ideal
+  - O(n) time/space expected; sorting O(n log n) acceptable but slower
+  - Large n (10⁵) handled well with set
+- **Weak-spot Update:** Basic hashing / set usage → very strong
+- **Teachables Seed:** Teachables/150006-Contains-Duplicate-Set-Pattern.md
+
+
+### 2026-02-15 – LeetCode 525: Contiguous Array – Final Validation
+- **Status:** Correct & battle-tested
+- **Key Insight Confirmed:**
+  - Must store **earliest** index only (no overwrite on repeat)
+  - seen[0] = -1 handles subarrays starting from index 0
+  - Balance +1/-1 + first-seen map = standard pattern for equal count subarrays
+- **Trap Avoided:**
+  - [0,1,0,1,0] → correct = 4, broken (overwrite index) = 2
+  - Your code correctly keeps first occurrence → passes trap
+- **Weak-spot Update:** Prefix balance + first-seen index pattern → very strong / confident
+- **Teachables Seed:** Teachables/150008-Contiguous-Array-Balance-Map.md
+
+
+
+
