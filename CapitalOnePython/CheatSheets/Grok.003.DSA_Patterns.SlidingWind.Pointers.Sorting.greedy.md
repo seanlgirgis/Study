@@ -112,6 +112,26 @@ def length_of_longest_substring_counter(s: str) -> int:
             left += 1
         max_len = max(max_len, right - left + 1)
     return max_len
+
+### "At Most K" Pattern (Variable Window)
+Generic template for "longest subarray with at most K zeros/distinct chars/etc".
+
+```python
+def at_most_k(nums: List[int], k: int) -> int:
+    left = 0
+    res = 0
+    for right in range(len(nums)):
+        # 1. Expand (add nums[right])
+        # ... update state ...
+        
+        # 2. Contract (while state invalid > k)
+        while state > k:
+            # ... remove nums[left] ...
+            left += 1
+            
+        # 3. Update result (window is valid)
+        res = max(res, right - left + 1)
+    return res
 ```
 
 **High-Frequency Problems**

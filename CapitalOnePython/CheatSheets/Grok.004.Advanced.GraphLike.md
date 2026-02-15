@@ -50,6 +50,16 @@ def spiralOrder(matrix: List[List[int]]) -> List[int]:
             left += 1
     
     return result
+
+## 1.5 Quick Direction Snippet
+Copy-paste for any grid neighbor iteration (4-way).
+```python
+# Up, Down, Left, Right
+for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+    nr, nc = r + dr, c + dc
+    if 0 <= nr < rows and 0 <= nc < cols:
+        # traverse(nr, nc)
+```
 ```
 
 **Rotate Image 90° clockwise (LC 48)**

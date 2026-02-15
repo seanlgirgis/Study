@@ -155,6 +155,22 @@ from collections import namedtuple
 Point = namedtuple("Point", ["x", "y"])
 p = Point(3, 4)
 print(p.x, p.y)         # 3 4
+
+## 7. Heaps (heapq) - Min-Heap by default
+O(log n) push/pop. Essential for "Top K" or "Median".
+
+```python
+import heapq
+min_heap = []
+heapq.heappush(min_heap, 10)
+heapq.heappush(min_heap, 1)        # [1, 10]
+smallest = heapq.heappop(min_heap) # 1
+
+# Max-Heap? Multiply by -1 when pushing/popping.
+# Heapify O(n):
+nums = [3, 1, 4]
+heapq.heapify(nums)                # nums is now a valid heap
+```
 ```
 
 ## 6. Quick LeetCode Ties (Practice These Today)

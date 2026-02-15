@@ -103,6 +103,7 @@ Direct code flow.
 - Loops:  
   For: `for i in range(5):` → 0-4 (start=0, stop=5, step=1)  
   `for char in "abc":` → 'a', 'b', 'c'  
+  Enumerate (Preferred): `for i, val in enumerate(nums):` → get index AND value.  
   While:  
   ```python
   i = 0
