@@ -62,6 +62,39 @@ def create_sorted_matrix(m: int, n: int, exists: bool = True) -> Tuple[List[List
     return matrix, target
 
 
+"""
+LEC 74.
+Since the matrix is unique sorted in each row. 
+a simple trick to do the search is to think of it as a long list
+of numbers sorted.
+
+just by creaating a Matrix2D2List class. ... Loading the dimensions.
+we can get things like. index of first item. index of last item. length
+we can also get mid point...
+We can get the item at these positions and their values.
+We can translate a list position to a matrix position.
+Doing that, we can treat the search as any normal binary search
+to make lige easy.. Our class  will handle the pointers on the list . This will make the code easy to implement.
+the class will keep track of right and left pointers and can mode one of them 
+to a  a middle position; it can even shift a pointer left or right
+
+
+"""
+class Matrix2D2List:
+    def __int__(self, _r: int, _c: int , _matrix: List[List[int]] ):
+        self.r = _r
+        self.c = _c 
+        self.matrix = _matrix
+        self.length = _r * _c    # Items in the list are are numberd 0 to self.length -1 
+        self.left = 0
+        self.right = self.length - 1
+
+
+
+
+
+
+
 
 
 
