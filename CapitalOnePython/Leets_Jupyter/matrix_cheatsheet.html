@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Operations Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #111318;
+    --surface: #1a1d24;
+    --surface2: #22262f;
+    --border: #2e323d;
+    --text: #d8dae0;
+    --text-dim: #7a7e8a;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Outfit', sans-serif;
+    --blue: #5b9bd5;
+    --blue-bg: rgba(91,155,213,0.1);
+    --red: #e06c60;
+    --red-bg: rgba(224,108,96,0.08);
+    --green: #7bc67e;
+    --green-bg: rgba(123,198,126,0.1);
+    --gold: #d4a84b;
+    --gold-bg: rgba(212,168,75,0.1);
+    --purple: #a78bda;
+    --purple-bg: rgba(167,139,218,0.1);
+    --cyan: #5bc0be;
+    --cyan-bg: rgba(91,192,190,0.1);
+    --orange: #e8935a;
+    --orange-bg: rgba(232,147,90,0.1);
+    --pink: #d87bce;
+    --pink-bg: rgba(216,123,206,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.5;
+    padding: 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .header .sub {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  /* Operation card */
+  .op-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1.2rem;
+    overflow: hidden;
+    animation: fadeIn 0.4s ease both;
+  }
+
+  .op-card:nth-child(2) { animation-delay: 0.03s; }
+  .op-card:nth-child(3) { animation-delay: 0.06s; }
+  .op-card:nth-child(4) { animation-delay: 0.09s; }
+  .op-card:nth-child(5) { animation-delay: 0.12s; }
+  .op-card:nth-child(6) { animation-delay: 0.15s; }
+  .op-card:nth-child(7) { animation-delay: 0.18s; }
+  .op-card:nth-child(8) { animation-delay: 0.21s; }
+  .op-card:nth-child(9) { animation-delay: 0.24s; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .op-header {
+    padding: 1rem 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+
+  .op-header:hover { background: var(--surface2); }
+
+  .op-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+  }
+
+  .op-name {
+    font-weight: 700;
+    font-size: 1rem;
+    flex: 1;
+  }
+
+  .op-formula {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .op-toggle {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    transition: transform 0.3s;
+  }
+
+  .op-card.open .op-toggle { transform: rotate(180deg); }
+
+  .op-body {
+    display: none;
+    padding: 0 1.3rem 1.3rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .op-card.open .op-body { display: block; }
+
+  /* Grid visuals inside cards */
+  .visual-row {
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+  }
+
+  .visual-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .v-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .mini-grid {
+    display: inline-grid;
+    gap: 2px;
+  }
+
+  .mini-grid.g3 { grid-template-columns: repeat(3, 36px); }
+  .mini-grid.g4 { grid-template-columns: repeat(4, 30px); }
+
+  .mg {
+    height: 36px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .mini-grid.g4 .mg { height: 30px; font-size: 0.6rem; }
+
+  .mg.p { background: var(--surface2); color: var(--text-dim); }
+
+  .v-arrow {
+    font-size: 1.4rem;
+    color: var(--text-dim);
+    align-self: center;
+    padding-top: 1rem;
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.8rem 0;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text-dim);
+  }
+
+  .code-block .kw { color: var(--purple); }
+  .code-block .fn { color: var(--blue); }
+  .code-block .cm { color: #555a66; font-style: italic; }
+  .code-block .num { color: var(--gold); }
+  .code-block .str { color: var(--green); }
+  .code-block .var { color: var(--text); }
+  .code-block .op { color: var(--red); }
+
+  /* Info line */
+  .info-line {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin: 0.5rem 0;
+    line-height: 1.5;
+  }
+
+  .info-line strong { color: var(--text); font-weight: 600; }
+
+  .tag-row {
+    display: flex;
+    gap: 0.4rem;
+    margin: 0.6rem 0;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--text-dim);
+  }
+
+  /* Combo section */
+  .combo-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.3rem;
+    margin-top: 1.5rem;
+  }
+
+  .combo-title {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--gold);
+  }
+
+  .combo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .combo-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.9rem;
+    border-left: 3px solid var(--border);
+  }
+
+  .combo-item .c-goal {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .combo-item .c-steps {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .combo-item .c-formula {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Traversal section */
+  .trav-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.3rem;
+    margin-top: 1.2rem;
+  }
+
+  .trav-title {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--cyan);
+  }
+
+  .trav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .trav-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.9rem;
+  }
+
+  .trav-item .t-name {
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .trav-item .t-code {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Colors per operation type */
+  .blue-op .op-badge { background: var(--blue-bg); color: var(--blue); }
+  .blue-op .op-name { color: var(--blue); }
+  .blue-op .mg.h { background: var(--blue-bg); color: var(--blue); }
+
+  .red-op .op-badge { background: var(--red-bg); color: var(--red); }
+  .red-op .op-name { color: var(--red); }
+  .red-op .mg.h { background: var(--red-bg); color: var(--red); }
+
+  .green-op .op-badge { background: var(--green-bg); color: var(--green); }
+  .green-op .op-name { color: var(--green); }
+  .green-op .mg.h { background: var(--green-bg); color: var(--green); }
+
+  .gold-op .op-badge { background: var(--gold-bg); color: var(--gold); }
+  .gold-op .op-name { color: var(--gold); }
+  .gold-op .mg.h { background: var(--gold-bg); color: var(--gold); }
+
+  .purple-op .op-badge { background: var(--purple-bg); color: var(--purple); }
+  .purple-op .op-name { color: var(--purple); }
+  .purple-op .mg.h { background: var(--purple-bg); color: var(--purple); }
+
+  .cyan-op .op-badge { background: var(--cyan-bg); color: var(--cyan); }
+  .cyan-op .op-name { color: var(--cyan); }
+  .cyan-op .mg.h { background: var(--cyan-bg); color: var(--cyan); }
+
+  .orange-op .op-badge { background: var(--orange-bg); color: var(--orange); }
+  .orange-op .op-name { color: var(--orange); }
+  .orange-op .mg.h { background: var(--orange-bg); color: var(--orange); }
+
+  .pink-op .op-badge { background: var(--pink-bg); color: var(--pink); }
+  .pink-op .op-name { color: var(--pink); }
+  .pink-op .mg.h { background: var(--pink-bg); color: var(--pink); }
+
+  /* LC reference */
+  .lc-ref {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    background: var(--surface2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    color: var(--text-dim);
+    margin-right: 0.3rem;
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    .op-formula { display: none; }
+    .combo-grid, .trav-grid { grid-template-columns: 1fr; }
+    .mg { height: 30px; font-size: 0.6rem; }
+    .mini-grid.g3 { grid-template-columns: repeat(3, 30px); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Matrix Operations Cheatsheet</h1>
+    <div class="sub">Click any operation to expand · Python · In-place</div>
+  </div>
+
+  <!-- OP 1: TRANSPOSE -->
+  <div class="op-card open blue-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Core</span>
+      <span class="op-name">Transpose</span>
+      <span class="op-formula">(r,c) → (c,r)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line">Flip across the <strong>main diagonal</strong> (top-left to bottom-right). Rows become columns.</p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Before</span>
+          <div class="mini-grid g3">
+            <div class="mg h">1</div><div class="mg h">2</div><div class="mg h">3</div>
+            <div class="mg p">4</div><div class="mg p">5</div><div class="mg p">6</div>
+            <div class="mg p">7</div><div class="mg p">8</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">After</span>
+          <div class="mini-grid g3">
+            <div class="mg h">1</div><div class="mg h">4</div><div class="mg h">7</div>
+            <div class="mg p">2</div><div class="mg p">5</div><div class="mg p">8</div>
+            <div class="mg p">3</div><div class="mg p">6</div><div class="mg p">9</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="cm"># Only swap upper triangle (j starts at i+1)</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">i</span> <span class="op">+</span> <span class="num">1</span>, <span class="var">n</span>):
+        <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">j</span>][<span class="var">i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">j</span>][<span class="var">i</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>]</div>
+      <div class="tag-row">
+        <span class="tag">O(n²) time</span>
+        <span class="tag">O(1) space</span>
+        <span class="tag">swap: matrix[i][j] ↔ matrix[j][i]</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OP 2: REVERSE EACH ROW (Horizontal Reflect) -->
+  <div class="op-card red-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Core</span>
+      <span class="op-name">Reverse Each Row</span>
+      <span class="op-formula">(r,c) → (r, n-1-c)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line">Mirror horizontally across the <strong>vertical center line</strong>. Left↔Right.</p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Before</span>
+          <div class="mini-grid g3">
+            <div class="mg h">1</div><div class="mg p">2</div><div class="mg h">3</div>
+            <div class="mg h">4</div><div class="mg p">5</div><div class="mg h">6</div>
+            <div class="mg h">7</div><div class="mg p">8</div><div class="mg h">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">After</span>
+          <div class="mini-grid g3">
+            <div class="mg h">3</div><div class="mg p">2</div><div class="mg h">1</div>
+            <div class="mg h">6</div><div class="mg p">5</div><div class="mg h">4</div>
+            <div class="mg h">9</div><div class="mg p">8</div><div class="mg h">7</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> <span class="op">//</span> <span class="num">2</span>):
+        <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">n-1-j</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">n-1-j</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>]
+
+<span class="cm"># Or use Python's built-in:</span>
+<span class="kw">for</span> <span class="var">row</span> <span class="kw">in</span> <span class="var">matrix</span>:
+    <span class="var">row</span>.<span class="fn">reverse</span>()</div>
+      <div class="tag-row">
+        <span class="tag">O(n²) time</span>
+        <span class="tag">O(1) space</span>
+        <span class="tag">j goes to n//2 only</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OP 3: REVERSE EACH COLUMN (Vertical Reflect) -->
+  <div class="op-card green-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Core</span>
+      <span class="op-name">Reverse Each Column</span>
+      <span class="op-formula">(r,c) → (n-1-r, c)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line">Mirror vertically across the <strong>horizontal center line</strong>. Top↔Bottom.</p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Before</span>
+          <div class="mini-grid g3">
+            <div class="mg h">1</div><div class="mg h">2</div><div class="mg h">3</div>
+            <div class="mg p">4</div><div class="mg p">5</div><div class="mg p">6</div>
+            <div class="mg h">7</div><div class="mg h">8</div><div class="mg h">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">After</span>
+          <div class="mini-grid g3">
+            <div class="mg h">7</div><div class="mg h">8</div><div class="mg h">9</div>
+            <div class="mg p">4</div><div class="mg p">5</div><div class="mg p">6</div>
+            <div class="mg h">1</div><div class="mg h">2</div><div class="mg h">3</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> <span class="op">//</span> <span class="num">2</span>):
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+        <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">n-1-i</span>][<span class="var">j</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">n-1-i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>]
+
+<span class="cm"># Or swap entire rows:</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> <span class="op">//</span> <span class="num">2</span>):
+    <span class="var">matrix</span>[<span class="var">i</span>], <span class="var">matrix</span>[<span class="var">n-1-i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">n-1-i</span>], <span class="var">matrix</span>[<span class="var">i</span>]</div>
+      <div class="tag-row">
+        <span class="tag">O(n²) time</span>
+        <span class="tag">O(1) space</span>
+        <span class="tag">i goes to n//2 only</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OP 4: ANTI-TRANSPOSE -->
+  <div class="op-card gold-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Advanced</span>
+      <span class="op-name">Anti-Transpose (Secondary Diagonal)</span>
+      <span class="op-formula">(r,c) → (n-1-c, n-1-r)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line">Flip across the <strong>anti-diagonal</strong> (top-right to bottom-left).</p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Before</span>
+          <div class="mini-grid g3">
+            <div class="mg p">1</div><div class="mg h">2</div><div class="mg h">3</div>
+            <div class="mg h">4</div><div class="mg p">5</div><div class="mg h">6</div>
+            <div class="mg h">7</div><div class="mg h">8</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">After</span>
+          <div class="mini-grid g3">
+            <div class="mg p">9</div><div class="mg h">6</div><div class="mg h">3</div>
+            <div class="mg h">8</div><div class="mg p">5</div><div class="mg h">2</div>
+            <div class="mg h">7</div><div class="mg h">4</div><div class="mg p">1</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> <span class="op">-</span> <span class="num">1</span> <span class="op">-</span> <span class="var">i</span>):
+        <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">n-1-j</span>][<span class="var">n-1-i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">n-1-j</span>][<span class="var">n-1-i</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>]</div>
+      <div class="tag-row">
+        <span class="tag">O(n²) time</span>
+        <span class="tag">O(1) space</span>
+        <span class="tag">j goes to n-1-i</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OP 5: ROTATE 90 CW -->
+  <div class="op-card purple-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Combo</span>
+      <span class="op-name">Rotate 90° Clockwise</span>
+      <span class="op-formula">(r,c) → (c, n-1-r)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line"><strong>Transpose</strong> then <strong>Reverse each row</strong>. <span class="lc-ref">LC 48</span></p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Original</span>
+          <div class="mini-grid g3">
+            <div class="mg p">1</div><div class="mg p">2</div><div class="mg p">3</div>
+            <div class="mg p">4</div><div class="mg p">5</div><div class="mg p">6</div>
+            <div class="mg p">7</div><div class="mg p">8</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">Transpose</span>
+          <div class="mini-grid g3">
+            <div class="mg p">1</div><div class="mg h">4</div><div class="mg h">7</div>
+            <div class="mg h">2</div><div class="mg p">5</div><div class="mg h">8</div>
+            <div class="mg h">3</div><div class="mg h">6</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">Reverse rows</span>
+          <div class="mini-grid g3">
+            <div class="mg h">7</div><div class="mg h">4</div><div class="mg h">1</div>
+            <div class="mg h">8</div><div class="mg h">5</div><div class="mg h">2</div>
+            <div class="mg h">9</div><div class="mg h">6</div><div class="mg h">3</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="cm"># Step 1: Transpose</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">i+1</span>, <span class="var">n</span>):
+        <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">j</span>][<span class="var">i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">j</span>][<span class="var">i</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>]
+
+<span class="cm"># Step 2: Reverse each row</span>
+<span class="kw">for</span> <span class="var">row</span> <span class="kw">in</span> <span class="var">matrix</span>:
+    <span class="var">row</span>.<span class="fn">reverse</span>()</div>
+    </div>
+  </div>
+
+  <!-- OP 6: ROTATE 90 CCW -->
+  <div class="op-card cyan-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Combo</span>
+      <span class="op-name">Rotate 90° Counter-Clockwise</span>
+      <span class="op-formula">(r,c) → (n-1-c, r)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line"><strong>Transpose</strong> then <strong>Reverse each column</strong>. Or equivalently: <strong>Reverse each row</strong> then <strong>Transpose</strong>.</p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Original</span>
+          <div class="mini-grid g3">
+            <div class="mg p">1</div><div class="mg p">2</div><div class="mg p">3</div>
+            <div class="mg p">4</div><div class="mg p">5</div><div class="mg p">6</div>
+            <div class="mg p">7</div><div class="mg p">8</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">Transpose</span>
+          <div class="mini-grid g3">
+            <div class="mg p">1</div><div class="mg h">4</div><div class="mg h">7</div>
+            <div class="mg h">2</div><div class="mg p">5</div><div class="mg h">8</div>
+            <div class="mg h">3</div><div class="mg h">6</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">Reverse cols</span>
+          <div class="mini-grid g3">
+            <div class="mg h">3</div><div class="mg h">6</div><div class="mg h">9</div>
+            <div class="mg h">2</div><div class="mg h">5</div><div class="mg h">8</div>
+            <div class="mg h">1</div><div class="mg h">4</div><div class="mg h">7</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="cm"># Step 1: Transpose</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span>):
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">i+1</span>, <span class="var">n</span>):
+        <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>], <span class="var">matrix</span>[<span class="var">j</span>][<span class="var">i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">j</span>][<span class="var">i</span>], <span class="var">matrix</span>[<span class="var">i</span>][<span class="var">j</span>]
+
+<span class="cm"># Step 2: Reverse each column (swap top/bottom rows)</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> <span class="op">//</span> <span class="num">2</span>):
+    <span class="var">matrix</span>[<span class="var">i</span>], <span class="var">matrix</span>[<span class="var">n-1-i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">n-1-i</span>], <span class="var">matrix</span>[<span class="var">i</span>]</div>
+    </div>
+  </div>
+
+  <!-- OP 7: ROTATE 180 -->
+  <div class="op-card orange-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Combo</span>
+      <span class="op-name">Rotate 180°</span>
+      <span class="op-formula">(r,c) → (n-1-r, n-1-c)</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line"><strong>Reverse each row</strong> then <strong>Reverse each column</strong> (or vice versa). Order doesn't matter.</p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Original</span>
+          <div class="mini-grid g3">
+            <div class="mg p">1</div><div class="mg p">2</div><div class="mg p">3</div>
+            <div class="mg p">4</div><div class="mg p">5</div><div class="mg p">6</div>
+            <div class="mg p">7</div><div class="mg p">8</div><div class="mg p">9</div>
+          </div>
+        </div>
+        <span class="v-arrow">→</span>
+        <div class="visual-col">
+          <span class="v-label">After 180°</span>
+          <div class="mini-grid g3">
+            <div class="mg h">9</div><div class="mg h">8</div><div class="mg h">7</div>
+            <div class="mg h">6</div><div class="mg h">5</div><div class="mg h">4</div>
+            <div class="mg h">3</div><div class="mg h">2</div><div class="mg h">1</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="cm"># Reverse each row, then reverse each column</span>
+<span class="kw">for</span> <span class="var">row</span> <span class="kw">in</span> <span class="var">matrix</span>:
+    <span class="var">row</span>.<span class="fn">reverse</span>()
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">n</span> <span class="op">//</span> <span class="num">2</span>):
+    <span class="var">matrix</span>[<span class="var">i</span>], <span class="var">matrix</span>[<span class="var">n-1-i</span>] <span class="op">=</span> <span class="var">matrix</span>[<span class="var">n-1-i</span>], <span class="var">matrix</span>[<span class="var">i</span>]</div>
+    </div>
+  </div>
+
+  <!-- OP 8: SPIRAL TRAVERSAL -->
+  <div class="op-card pink-op">
+    <div class="op-header" onclick="toggle(this)">
+      <span class="op-badge">Traversal</span>
+      <span class="op-name">Spiral Order</span>
+      <span class="op-formula">shrinking boundaries</span>
+      <span class="op-toggle">▼</span>
+    </div>
+    <div class="op-body">
+      <p class="info-line">Read elements in spiral order. Use <strong>four shrinking boundaries</strong>. <span class="lc-ref">LC 54</span> <span class="lc-ref">LC 59</span></p>
+      <div class="visual-row">
+        <div class="visual-col">
+          <span class="v-label">Traversal order</span>
+          <div class="mini-grid g4">
+            <div class="mg h">1→</div><div class="mg h">2→</div><div class="mg h">3→</div><div class="mg h">4↓</div>
+            <div class="mg p">↑12</div><div class="mg p">13→</div><div class="mg p">14↓</div><div class="mg p">5↓</div>
+            <div class="mg p">↑11</div><div class="mg p">←16</div><div class="mg p">←15</div><div class="mg p">6↓</div>
+            <div class="mg h">↑10</div><div class="mg h">←9</div><div class="mg h">←8</div><div class="mg h">7</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block"><span class="var">top</span>, <span class="var">bot</span>, <span class="var">left</span>, <span class="var">right</span> <span class="op">=</span> <span class="num">0</span>, <span class="var">n</span><span class="op">-</span><span class="num">1</span>, <span class="num">0</span>, <span class="var">n</span><span class="op">-</span><span class="num">1</span>
+<span class="var">result</span> <span class="op">=</span> []
+<span class="kw">while</span> <span class="var">top</span> <span class="op"><=</span> <span class="var">bot</span> <span class="kw">and</span> <span class="var">left</span> <span class="op"><=</span> <span class="var">right</span>:
+    <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">left</span>, <span class="var">right</span><span class="op">+</span><span class="num">1</span>):    <span class="cm"># → top row</span>
+        <span class="var">result</span>.<span class="fn">append</span>(<span class="var">matrix</span>[<span class="var">top</span>][<span class="var">c</span>])
+    <span class="var">top</span> <span class="op">+=</span> <span class="num">1</span>
+    <span class="kw">for</span> <span class="var">r</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">top</span>, <span class="var">bot</span><span class="op">+</span><span class="num">1</span>):    <span class="cm"># ↓ right col</span>
+        <span class="var">result</span>.<span class="fn">append</span>(<span class="var">matrix</span>[<span class="var">r</span>][<span class="var">right</span>])
+    <span class="var">right</span> <span class="op">-=</span> <span class="num">1</span>
+    <span class="kw">if</span> <span class="var">top</span> <span class="op"><=</span> <span class="var">bot</span>:
+        <span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">right</span>, <span class="var">left</span><span class="op">-</span><span class="num">1</span>, <span class="op">-</span><span class="num">1</span>): <span class="cm"># ← bottom row</span>
+            <span class="var">result</span>.<span class="fn">append</span>(<span class="var">matrix</span>[<span class="var">bot</span>][<span class="var">c</span>])
+        <span class="var">bot</span> <span class="op">-=</span> <span class="num">1</span>
+    <span class="kw">if</span> <span class="var">left</span> <span class="op"><=</span> <span class="var">right</span>:
+        <span class="kw">for</span> <span class="var">r</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="var">bot</span>, <span class="var">top</span><span class="op">-</span><span class="num">1</span>, <span class="op">-</span><span class="num">1</span>): <span class="cm"># ↑ left col</span>
+            <span class="var">result</span>.<span class="fn">append</span>(<span class="var">matrix</span>[<span class="var">r</span>][<span class="var">left</span>])
+        <span class="var">left</span> <span class="op">+=</span> <span class="num">1</span></div>
+    </div>
+  </div>
+
+  <!-- COMBOS REFERENCE -->
+  <div class="combo-section">
+    <div class="combo-title">⚡ Quick Reference: Compose Any Rotation</div>
+    <div class="combo-grid">
+      <div class="combo-item" style="border-left-color: var(--purple);">
+        <div class="c-goal">90° Clockwise</div>
+        <div class="c-steps">Transpose → Reverse rows</div>
+        <div class="c-formula" style="color: var(--purple);">(r,c) → (c, n-1-r)</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--cyan);">
+        <div class="c-goal">90° Counter-Clockwise</div>
+        <div class="c-steps">Transpose → Reverse columns</div>
+        <div class="c-formula" style="color: var(--cyan);">(r,c) → (n-1-c, r)</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--orange);">
+        <div class="c-goal">180°</div>
+        <div class="c-steps">Reverse rows → Reverse columns</div>
+        <div class="c-formula" style="color: var(--orange);">(r,c) → (n-1-r, n-1-c)</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--red);">
+        <div class="c-goal">Horizontal Mirror</div>
+        <div class="c-steps">Reverse each row</div>
+        <div class="c-formula" style="color: var(--red);">(r,c) → (r, n-1-c)</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--green);">
+        <div class="c-goal">Vertical Mirror</div>
+        <div class="c-steps">Reverse each column (swap rows)</div>
+        <div class="c-formula" style="color: var(--green);">(r,c) → (n-1-r, c)</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--blue);">
+        <div class="c-goal">Main Diagonal Mirror</div>
+        <div class="c-steps">Transpose</div>
+        <div class="c-formula" style="color: var(--blue);">(r,c) → (c, r)</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--gold);">
+        <div class="c-goal">Anti-Diagonal Mirror</div>
+        <div class="c-steps">Anti-transpose</div>
+        <div class="c-formula" style="color: var(--gold);">(r,c) → (n-1-c, n-1-r)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMON TRAVERSALS -->
+  <div class="trav-section">
+    <div class="trav-title">🔁 Common Traversal Patterns</div>
+    <div class="trav-grid">
+      <div class="trav-item">
+        <div class="t-name">Row by Row</div>
+        <div class="t-code">for i in range(n):<br/>&nbsp;&nbsp;for j in range(n):</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">Column by Column</div>
+        <div class="t-code">for j in range(n):<br/>&nbsp;&nbsp;for i in range(n):</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">Main Diagonal</div>
+        <div class="t-code">for i in range(n):<br/>&nbsp;&nbsp;matrix[i][i]</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">Anti-Diagonal</div>
+        <div class="t-code">for i in range(n):<br/>&nbsp;&nbsp;matrix[i][n-1-i]</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">Upper Triangle</div>
+        <div class="t-code">for i in range(n):<br/>&nbsp;&nbsp;for j in range(i+1, n):</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">Lower Triangle</div>
+        <div class="t-code">for i in range(n):<br/>&nbsp;&nbsp;for j in range(i):</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">4 Neighbors (BFS/DFS)</div>
+        <div class="t-code">dirs = [(0,1),(0,-1),(1,0),(-1,0)]<br/>for dr,dc in dirs:<br/>&nbsp;&nbsp;nr, nc = r+dr, c+dc</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">8 Neighbors (incl diagonal)</div>
+        <div class="t-code">for dr in [-1,0,1]:<br/>&nbsp;&nbsp;for dc in [-1,0,1]:<br/>&nbsp;&nbsp;&nbsp;&nbsp;if dr==0 and dc==0: continue</div>
+      </div>
+      <div class="trav-item">
+        <div class="t-name">Border Only</div>
+        <div class="t-code">for i in range(n):<br/>&nbsp;&nbsp;if i==0 or i==n-1:<br/>&nbsp;&nbsp;&nbsp;&nbsp;all cols<br/>&nbsp;&nbsp;else: first &amp; last col</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LC REFERENCE -->
+  <div class="combo-section" style="margin-top: 1.2rem;">
+    <div class="combo-title" style="color: var(--pink);">📋 Related LeetCode Problems</div>
+    <div class="combo-grid">
+      <div class="combo-item" style="border-left-color: var(--purple);">
+        <div class="c-goal"><span class="lc-ref">LC 48</span> Rotate Image</div>
+        <div class="c-steps">Transpose + Reverse rows</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--pink);">
+        <div class="c-goal"><span class="lc-ref">LC 54</span> Spiral Matrix</div>
+        <div class="c-steps">Shrinking boundaries traversal</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--pink);">
+        <div class="c-goal"><span class="lc-ref">LC 59</span> Spiral Matrix II</div>
+        <div class="c-steps">Fill in spiral order</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--green);">
+        <div class="c-goal"><span class="lc-ref">LC 73</span> Set Matrix Zeroes</div>
+        <div class="c-steps">Use first row/col as markers</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--blue);">
+        <div class="c-goal"><span class="lc-ref">LC 74</span> Search a 2D Matrix</div>
+        <div class="c-steps">Binary search on virtual 1D index</div>
+      </div>
+      <div class="combo-item" style="border-left-color: var(--cyan);">
+        <div class="c-goal"><span class="lc-ref">LC 200</span> Number of Islands</div>
+        <div class="c-steps">DFS/BFS with 4-neighbor traversal</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggle(header) {
+  header.closest('.op-card').classList.toggle('open');
+}
+</script>
+</body>
+</html>
