@@ -83,8 +83,8 @@ to a  a middle position; it can even shift a pointer left or right
 """
 class Matrix2D2List:
     def __init__(self, r: int, c: int , matrix: List[List[int]] ):
-        self._r = r
-        self._c = c
+        self._rows = r
+        self._cols = c
         self._matrix = matrix
         self._length = r * c    # Items in the list are are numberd 0 to self.length -1 
         self._left = 0
@@ -113,8 +113,10 @@ class Matrix2D2List:
             raise IndexError(f"Position ({row}, {col}) out of bounds")
         return self._matrix[row][col]
 
+    def value_at_mid(self)->int:
+        return self.value_at_index(self._mid)
 
-    def value_at_index(self, index: int):
+    def value_at_index(self, index: int)->int:
         """Given a linear index, return the matrix value at that position."""
         row, col = self.index_to_position(index)
         return self._matrix[row][col]
@@ -180,14 +182,15 @@ def searchMatrix(self, matrix: List[List[int]], target: int) -> bool:
 
 
 
-
+def print_line():
+    print ("-" * 50)
 
 
 if __name__ == "__main__":
     m, n = 3, 4
     
     # Test Existing
-    mat, target = create_sorted_matrix(m, n, exists=True)
+    mat, target = create_sorted_matrix(m, n, exists=False)
     print(f"Generated {m}x{n} Matrix (Target Exists):")
     for row in mat:
         print(row)
@@ -196,9 +199,30 @@ if __name__ == "__main__":
     #using matrix and m and n we will test and simpulate the usage of 
     # the class Matrix2D2List
     matrix: Matrix2D2List = Matrix2D2List(m,n, mat)
+    print ("-"*15, "Testing the Matrix 2d 2 List ", "-" * 15)
+    matrix.pprint()
+    print_line()
+    matrix.plprint()
+    print_line()
+    print (f" List length {matrix._length}, right {matrix._right}, left {matrix._left}, mid {matrix._mid}, value at mid {matrix.value_at_mid()}")
+    print_line()
+    while matrix._left <= matrix._right:
+        matrix.mid()   # calculate the mid point
 
-    print (matrix._length)
+        if matrix.value_at_mid() == target :  # value exist in matrix
+            print ("Value is in matrix")      #change to return True
+            break
 
+        elif matrix.value_at_mid() < target:
+            matrix._left = matrix._mid + 1
+        
+        else:
+            matrix._right = matrix._mid - 1
+
+    # add return false here .. Value not found. At the moment either you get
+    # Value is in matrix or None
+
+    print_line()
 
 
 
